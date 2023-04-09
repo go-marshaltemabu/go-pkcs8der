@@ -8,6 +8,9 @@ import (
 var b64Enc = base64.RawURLEncoding
 
 func (k PrivateKey) MarshalText() (text []byte, err error) {
+	if k.Key == nil {
+		return
+	}
 	binBuf, err := x509.MarshalPKCS8PrivateKey(k.Key)
 	if nil != err {
 		return
@@ -18,7 +21,12 @@ func (k PrivateKey) MarshalText() (text []byte, err error) {
 }
 
 func (k *PrivateKey) UnmarshalText(text []byte) (err error) {
-	decBuf := make([]byte, b64Enc.DecodedLen(len(text)))
+	txtLen := len(text)
+	if txtLen == 0 {
+		k.Key = nil
+		return
+	}
+	decBuf := make([]byte, b64Enc.DecodedLen(txtLen))
 	n, err := b64Enc.Decode(decBuf, text)
 	if nil != err {
 		return
